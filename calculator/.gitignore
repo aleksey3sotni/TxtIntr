@@ -1,5 +1,12 @@
+calculator
+calculator-dbg
+
 *.o
-*.so
-*.a
+
+*.out
 *.exe
-*.dll
+
+*.log
+
+*.tmp
+*.temp
