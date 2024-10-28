@@ -1,92 +1,61 @@
 #include <iostream>
-#include <string>
-#include <vector>
-#include <sstream>
-#include <algorithm>
 #include <cstdlib>
+#include <string>
+#include <stdexcept> // Для std::invalid_argument
 
 using namespace std;
 
-// Функция для вывода справки
-void showHelp() {
-    cout << "Использование: calculator [-o operation] [operand1] [operand2] ..." << endl;
-    cout << "Допустимые операции: summa, vychitanie" << endl;
-    cout << "Пример: calculator -o summa 45 13 -2" << endl;
+bool isNumber(const string& str) {
+    try {
+        std::stod(str); // Попытка преобразовать строку в число
+        return true;
+    } catch (const std::invalid_argument&) {
+        return false; // Если не удалось преобразовать, значит это не число
+    } catch (const std::out_of_range&) {
+        return false; // Если число выходит за пределы диапазона
+    }
 }
 
-// Функция для суммирования
-double summa(const vector<double>& operands) {
-    double result = 0;
-    for (double operand : operands) {
-        result += operand;
-    }
-    return result;
-}
-
-// Функция для вычитания
-double vychitanie(const vector<double>& operands) {
-    if (operands.empty()) {
-        return 0;
-    }
-    double result = operands[0];
-    for (size_t i = 1; i < operands.size(); ++i) {
-        result -= operands[i];
-    }
-    return result;
-}
-
-int main(int argc, char* argv[]) {
-    // Проверка на наличие параметров
-    if (argc < 2) {
-        showHelp();
-        return 0;
+int main(int argc, char* argv[])
+{
+    if (argc < 5 || argc > 7) { // Проверка количества аргументов
+        cout << "Справочный материал." << endl <<
+        "Использование: ./calculator -o [операция] [число1] [число2] [число3] [число4]" << endl <<
+        "Где [операция] может быть:" << endl <<
+        "  summa - для сложения всех операндов" << endl <<
+        "  vychitanie - для вычитания (из первого операнда всех остальных)" << endl;
+        return 1; // Завершение программы с кодом ошибки
     }
 
-    // Обработка параметров
-    string operation;
-    vector<double> operands;
-    for (int i = 1; i < argc; ++i) {
-        string arg = argv[i];
-        if (arg == "-o" || arg == "--operation") {
-            if (++i < argc) {
-                operation = argv[i];
-            } else {
-                cerr << "Ошибка: отсутствует операция." << endl;
-                return 1;
-            }
-        } else {
-            try {
-                operands.push_back(stod(arg));
-            } catch (const std::invalid_argument& e) {
-                cerr << "Ошибка: неверный формат операнда." << endl;
-                return 1;
-            } catch (const std::out_of_range& e) {
-                cerr << "Ошибка: операнд вне диапазона." << endl;
-                return 1;
-            }
+    string operation = argv[2];
+
+    // Проверка на корректность операции
+    if (operation != "summa" && operation != "vychitanie") {
+        cout << "Ошибка: '" << operation << "' Не является допустимой операцией." << endl;
+        return 1; // Завершение программы с кодом ошибки
+    }
+
+    // Проверка на корректность чисел
+    for (int i = 3; i < argc; ++i) {
+        if (!isNumber(argv[i])) {
+            cout << "Ошибка: '" << argv[i] << "' Не является числом." << endl;
+            return 1; // Завершение программы с кодом ошибки
         }
     }
 
-    // Проверка количества операндов
-    if (operands.size() < 2 || operands.size() > 4) {
-        cerr << "Ошибка: недопустимое количество операндов." << endl;
-        return 1;
-    }
-
-    // Выполнение операции
-    double result;
     if (operation == "summa") {
-        result = summa(operands);
+        double sum = 0;
+        for (int i = 3; i < argc; ++i) {
+            sum += atof(argv[i]);
+        }
+        cout << "Сумма: " << sum << endl;
     } else if (operation == "vychitanie") {
-        result = vychitanie(operands);
-    } else {
-        cerr << "Ошибка: неподдерживаемая операция." << endl;
-        return 1;
+        double result = atof(argv[3]);
+        for (int i = 4; i < argc; ++i) {
+            result -= atof(argv[i]);
+        }
+        cout << "Результат вычитания: " << result << endl;
     }
-
-    // Вывод результата
-    cout << "Результат: " << result << endl;
 
     return 0;
 }
-
